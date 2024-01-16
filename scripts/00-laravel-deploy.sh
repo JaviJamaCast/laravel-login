@@ -1,40 +1,64 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-# Instalar dependencias de Composer
-echo "Running composer..."
-composer global require hirak/prestissimo
-composer install --no-dev --working-dir=/var/www/html
+# Variables de configuración
+APP_DIR="/var/www/html"  # Directorio de la aplicación Laravel
+ENV_FILE=".env"          # Archivo de entorno
+COMPOSER_BIN="composer"  # Comando Composer
+NPM_BIN="npm"            # Comando npm
+PHP_BIN="php"            # Comando PHP
+ARTISAN_BIN="artisan"    # Comando Artisan
+NGINX_RESTART_CMD="sudo service nginx restart"  # Comando para reiniciar Nginx
 
-# Actualizar autoloader de Composer
-echo "Dumping composer autoload..."
-composer dump-autoload --working-dir=/var/www/html
+# Actualiza el código de la aplicación desde el repositorio (puede ser Git, por ejemplo)
+echo "Actualizando el código fuente..."
+cd $APP_DIR
+git pull origin main  # Reemplaza 'main' con la rama que estés utilizando
 
-# Generar clave de aplicación
-echo "Generating application key..."
-php artisan key:generate --show
+# Instala dependencias de Composer
+echo "Instalando dependencias de Composer..."
+$COMPOSER_BIN global require hirak/prestissimo
+$COMPOSER_BIN install --no-dev
 
-# Cachear configuración
-echo "Caching config..."
-php artisan config:cache
+# Actualiza el autoloader de Composer
+echo "Actualizando el autoloader de Composer..."
+$COMPOSER_BIN dump-autoload --working-dir=$APP_DIR
 
-# Cachear rutas
-echo "Caching routes..."
-php artisan route:cache
+# Genera una clave de aplicación si no está configurada
+if [ ! -f "$APP_DIR/$ENV_FILE" ]; then
+    echo "Generando clave de aplicación..."
+    $PHP_BIN $ARTISAN_BIN key:generate --show
+fi
 
-# Ejecutar migraciones
-echo "Running migrations..."
-php artisan migrate --force
+# Caché de configuración y rutas
+echo "Caché de configuración y rutas..."
+$PHP_BIN $ARTISAN_BIN config:cache
+$PHP_BIN $ARTISAN_BIN route:cache
+
+# Ejecuta las migraciones de la base de datos
+echo "Ejecutando migraciones de base de datos..."
+$PHP_BIN $ARTISAN_BIN migrate --force
 
 # Poner datos de prueba
 echo "Seeding the database..."
-php artisan db:seed
+$PHP_BIN $ARTISAN_BIN db:seed
 
-# Instalar dependencias de Node.js para Vite
-echo "Installing Node.js dependencies..."
-npm install
+# Instala dependencias de Node.js (opcional, si se utilizan)
+if [ -f "$APP_DIR/package.json" ]; then
+    echo "Instalando dependencias de Node.js..."
+    cd $APP_DIR
+    $NPM_BIN install
+    $NPM_BIN run build  # Otra opción como 'dev' dependiendo de tu entorno
+fi
 
-# Construir los assets de front-end utilizando Vite
-echo "Building front-end assets with Vite..."
-npm run build
+# Reinicia Nginx
+echo "Reiniciando Nginx..."
+$NGINX_RESTART_CMD
 
-# Continúa con cualquier otro paso necesario para tu despliegue
+# Limpia la caché de la aplicación Laravel
+echo "Limpiando la caché de Laravel..."
+$PHP_BIN $ARTISAN_BIN cache:clear
+$PHP_BIN $ARTISAN_BIN config:clear
+
+# Otras tareas de implementación, como la configuración de permisos, pueden ir aquí
+
+echo "¡Despliegue completado!"
