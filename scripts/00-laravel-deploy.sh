@@ -31,5 +31,6 @@ npm install
 
 echo "Building front-end assets with Vite..."
 npm run build
+npm run dev
 
 # Continúa con cualquier otro paso necesario para tu despliegue
