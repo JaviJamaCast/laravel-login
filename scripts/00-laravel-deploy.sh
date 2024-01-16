@@ -4,7 +4,7 @@
 echo "Running composer..."
 composer global require hirak/prestissimo
 composer install --no-dev --working-dir=/var/www/html
-
+composer dump-autoload
 # Generar clave de aplicación
 echo "Generating application key..."
 php artisan key:generate --show
