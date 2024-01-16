@@ -70,7 +70,7 @@ class ArticuloController extends Controller
         // Insertar el artículo en la BBDD tras su validación.
         Articulo::create($validated);
 
-        return redirect(route('articulos.index'));
+        return redirect(route('dashboard'));
     }
 
     public function destroy(Articulo $articulo)
@@ -89,9 +89,9 @@ class ArticuloController extends Controller
 
     public function update(Request $request, Articulo $articulo)
     {
-        if (!Gate::allows('update-article', $articulo)) {
+       /*  if (!Gate::allows('update-article', $articulo)) {
             abort(403);
-        }
+        } */
         $validated = $request->validate([
             'titulo' => 'required|string|max:255',
             'contenido' => 'required|string'
