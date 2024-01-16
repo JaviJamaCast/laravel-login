@@ -4,7 +4,11 @@
 echo "Running composer..."
 composer global require hirak/prestissimo
 composer install --no-dev --working-dir=/var/www/html
-composer dump-autoload
+
+# Actualizar autoloader de Composer
+echo "Dumping composer autoload..."
+composer dump-autoload --working-dir=/var/www/html
+
 # Generar clave de aplicación
 echo "Generating application key..."
 php artisan key:generate --show
@@ -21,7 +25,7 @@ php artisan route:cache
 echo "Running migrations..."
 php artisan migrate --force
 
-#Ponemos datos de prueba
+# Poner datos de prueba
 echo "Seeding the database..."
 php artisan db:seed
 
